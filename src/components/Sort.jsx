@@ -1,22 +1,25 @@
 import { useState } from 'react';
 
-export const Sort = () => {
+export const Sort = (props) => {
+  const { value, onClickSort } = props;
   const [isShow, setIsShow] = useState(false);
-  const [sort, setSort] = useState('популярности');
-  const list = ['популярности', 'цене', 'алфавиту'];
+  const list = [
+    { name: 'популярности ↑', sort: 'rating', order: 'asc' },
+    { name: 'популярности ↓', sort: 'rating', order: 'desc' },
+    { name: 'цене ↑', sort: 'price', order: 'asc' },
+    { name: 'цене ↓', sort: 'price', order: 'desc' },
+    { name: 'алфавиту ↑', sort: 'title', order: 'asc' },
+    { name: 'алфавиту ↓', sort: 'title', order: 'desc' },
+  ];
 
-  const clickOnSort = () => {
+  const onClickItem = (index) => {
+    onClickSort(index);
     setIsShow(!isShow);
-  };
-
-  const editSort = (obj) => {
-    setSort(obj);
-    clickOnSort();
   };
 
   return (
     <div className='sort'>
-      <div className='sort__label' onClick={clickOnSort}>
+      <div className='sort__label' onClick={() => setIsShow(!isShow)}>
         {isShow ? (
           <svg
             width='10'
@@ -47,18 +50,18 @@ export const Sort = () => {
           </svg>
         )}
         <b>Сортировка по:</b>
-        <span>{sort}</span>
+        <span>{value.name}</span>
       </div>
       {isShow ? (
         <div className='sort__popup'>
           <ul>
-            {list.map((item) => (
+            {list.map((item, index) => (
               <li
-                key={item}
-                className={sort === item ? 'active' : ''}
-                onClick={() => editSort(item)}
+                key={item.name}
+                className={value === item ? 'active' : ''}
+                onClick={() => onClickItem(item)}
               >
-                {item}
+                {item.name}
               </li>
             ))}
           </ul>
