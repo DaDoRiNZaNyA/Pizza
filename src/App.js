@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { createContext } from "react";
 import { Routes, Route } from "react-router-dom";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 import { Header } from "./components/Header";
 import { Home } from "./pages/Home";
@@ -8,20 +10,23 @@ import { Cart } from "./pages/Cart";
 
 import "./scss/app.scss";
 
+export const SearchContext = createContext("");
+
 function App() {
-  const [searchValue, setSearchValue] = useState("");
   return (
     <div className="wrapper">
-      <Header searchValue={searchValue} setSearchValue={setSearchValue} />
-      <div className="content">
-        <div className="container">
-          <Routes>
-            <Route path="/" element={<Home searchValue={searchValue} />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+      <Provider store={store}>
+        <Header />
+        <div className="content">
+          <div className="container">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </div>
-      </div>
+      </Provider>
     </div>
   );
 }

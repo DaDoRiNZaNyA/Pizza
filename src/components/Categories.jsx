@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export const Categories = (props) => {
   const { value, onClickCategory } = props;
   const categories = ['Все', 'Мясные', 'Вегетарианская', 'Гриль', 'Острые', 'Закрытые'];

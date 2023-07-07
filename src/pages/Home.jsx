@@ -1,21 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
+import { setCategoryId } from '../redux/slices/filterSlice';
 import { Categories } from '../components/Categories';
 import { Sort } from '../components/Sort';
 import { PizzaBlock } from '../components/PizzaBlock';
 import Skeleton from '../components/PizzaBlock/Skeleton';
 import { Pagination } from '../components/Pagination';
+import { SearchContext } from '../App';
 
 export const Home = (props) => {
-  const {searchValue} = props; 
+  const dispatch = useDispatch();
+  const categoryId = useSelector(state => state.filter.categoryId);
+  const sortType = useSelector(state => state.filter.sort);
+  const searchValue = useSelector(state => state.filter.searchValue);
   const [pizzas, setPizzas] = useState([]);
-  const [categoryId, setCategoryId] = useState(0);
-  const [sortType, setSortType] = useState({
-    name: 'популярности ↓',
-    sort: 'rating',
-    order: 'desc',
-  });
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const onChangeCategory = (id) => {
+     dispatch(setCategoryId(id));
+  }
 
   useEffect(() => {
     setPizzas([]);
@@ -29,24 +33,25 @@ export const Home = (props) => {
     if (categoryId === 0) {
       link = `https://64a41085c3b509573b56feb2.mockapi.io/pizzas?page=${currentPage}&limit=4&${search}sortBy=${sortType.sort}&order=${sortType.order}`;
     } else {
-      link = `https://64a41085c3b509573b56feb2.mockapi.io/pizzas?page=${currentPage}&limit=4&${search}?category=${categoryId}&sortBy=${sortType.sort}&order=${sortType.order}`;
+      link = `https://64a41085c3b509573b56feb2.mockapi.io/pizzas?page=${currentPage}&limit=4&${search}category=${categoryId}&sortBy=${sortType.sort}&order=${sortType.order}`;
     }    
     fetch(link)
       .then((res) => res.json())
       .then((json) => {
+        console.log(json);
         setPizzas(json);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [categoryId, sortType, searchValue, currentPage]);
+  }, [categoryId,sortType, searchValue, currentPage]);
   
 
   return (
     <>
       <div className='content__top'>
-        <Categories value={categoryId} onClickCategory={(i) => setCategoryId(i)} />
-        <Sort value={sortType} onClickSort={(i) => setSortType(i)} />
+        <Categories value={categoryId} onClickCategory={onChangeCategory} />
+        <Sort/>
       </div>
       <h2 className='content__title'>Все пиццы</h2>
       <div className='content__items'>
