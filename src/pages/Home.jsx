@@ -1,60 +1,95 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
+import qs from "qs";
+import { useNavigate } from "react-router-dom";
 
-import { setCategoryId } from '../redux/slices/filterSlice';
-import { Categories } from '../components/Categories';
-import { Sort } from '../components/Sort';
-import { PizzaBlock } from '../components/PizzaBlock';
-import Skeleton from '../components/PizzaBlock/Skeleton';
-import { Pagination } from '../components/Pagination';
-import { SearchContext } from '../App';
+import {
+  setCategoryId,
+  setPageCount,
+  setFilters,
+} from "../redux/slices/filterSlice";
+import { Categories } from "../components/Categories";
+import { Sort } from "../components/Sort";
+import { PizzaBlock } from "../components/PizzaBlock";
+import Skeleton from "../components/PizzaBlock/Skeleton";
+import { Pagination } from "../components/Pagination";
 
 export const Home = (props) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const categoryId = useSelector(state => state.filter.categoryId);
-  const sortType = useSelector(state => state.filter.sort);
-  const searchValue = useSelector(state => state.filter.searchValue);
+  const categoryId = useSelector((state) => state.filter.categoryId);
+  const sort = useSelector((state) => state.filter.sort);
+  const pageCount = useSelector((state) => state.filter.pageCount);
+  const searchValue = useSelector((state) => state.filter.searchValue);
+  const isSearch = useRef(false);
+  const isMounted = useRef(false);
   const [pizzas, setPizzas] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  
+
   const onChangeCategory = (id) => {
-     dispatch(setCategoryId(id));
-  }
+    dispatch(setCategoryId(id));
+  };
+
+  const onChangePage = (number) => {
+    dispatch(setPageCount(number));
+  };
 
   useEffect(() => {
-    setPizzas([]);
-    let link = '';
-    let search = '';
-    if (searchValue !== '&') {
-      search = `&search=${searchValue}&`;
-    } else {
-      search = '';
+    if (window.location.search) {
+      const params = qs.parse(window.location.search.substring(1));
+      dispatch(setFilters(params));
+      isSearch.current = true;
     }
-    if (categoryId === 0) {
-      link = `https://64a41085c3b509573b56feb2.mockapi.io/pizzas?page=${currentPage}&limit=4&${search}sortBy=${sortType.sort}&order=${sortType.order}`;
-    } else {
-      link = `https://64a41085c3b509573b56feb2.mockapi.io/pizzas?page=${currentPage}&limit=4&${search}category=${categoryId}&sortBy=${sortType.sort}&order=${sortType.order}`;
-    }    
-    fetch(link)
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json);
-        setPizzas(json);
-      })
-      .catch((err) => {
-        console.log(err);
+  }, []);
+
+  useEffect(() => {
+    if (!isSearch.current) {
+      setPizzas([]);
+      let link = "";
+      let search = "";
+      if (searchValue !== "") {
+        search = `&search=${searchValue}`;
+      } else {
+        search = "";
+      }
+      if (categoryId == 0) {
+        link = `https://64a41085c3b509573b56feb2.mockapi.io/pizzas?page=${pageCount}&limit=4${search}&sortBy=${sort.sort}&order=${sort.order}`;
+      } else {
+        link = `https://64a41085c3b509573b56feb2.mockapi.io/pizzas?category=${categoryId}&page=${pageCount}&limit=4${search}&sortBy=${sort.sort}&order=${sort.order}`;
+      }
+      axios
+        .get(link)
+        .then((res) => {
+          setPizzas(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+    isSearch.current = false;
+    window.scrollTo(0, 0);
+  }, [categoryId, sort, searchValue, pageCount]);
+
+  useEffect(() => {
+    if (isMounted.current) {
+      const queryString = qs.stringify({
+        sort,
+        categoryId,
+        pageCount,
       });
-  }, [categoryId,sortType, searchValue, currentPage]);
-  
+      navigate(`?${queryString}`);
+    }
+    isMounted.current = true;
+  }, [categoryId, sort, searchValue, pageCount]);
 
   return (
     <>
-      <div className='content__top'>
+      <div className="content__top">
         <Categories value={categoryId} onClickCategory={onChangeCategory} />
-        <Sort/>
+        <Sort />
       </div>
-      <h2 className='content__title'>Все пиццы</h2>
-      <div className='content__items'>
+      <h2 className="content__title">Все пиццы</h2>
+      <div className="content__items">
         {pizzas.length === 0
           ? [...Array(10)].map((i, index) => <Skeleton key={index} />)
           : pizzas.map((item) => (
@@ -71,7 +106,7 @@ export const Home = (props) => {
               />
             ))}
       </div>
-      <Pagination onChangePage={(number) => setCurrentPage(number)}/>
+      <Pagination value={pageCount} onChangePage={onChangePage} />
     </>
   );
 };

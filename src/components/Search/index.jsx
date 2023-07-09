@@ -1,14 +1,25 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setSearchValue } from '../../redux/slices/filterSlice';
+import React, { useCallback, useState } from "react";
+import debounce from "lodash.debounce";
+import { useDispatch } from "react-redux";
+import { setSearchValue } from "../../redux/slices/filterSlice";
 
-import styles from './Search.module.scss'
+import styles from "./Search.module.scss";
 
 export const Search = () => {
+  const { localSearchValue, setLocalSearchValue } = useState("");
   const dispatch = useDispatch();
-  const searchValue = useSelector(state => state.filter.searchValue)
-
+  const onChangeInput = useCallback(
+    debounce((event) => {
+      dispatch(setSearchValue(event.target.value));
+    }, 1000),
+    []
+  );
   return (
-    <input onChange={(event) => dispatch(setSearchValue(event.target.value))} value={searchValue} className={styles.root} placeholder='Поиск...'></input>
-  )
-}
+    <input
+      onChange={onChangeInput}
+      value={localSearchValue}
+      className={styles.root}
+      placeholder="Поиск..."
+    ></input>
+  );
+};
