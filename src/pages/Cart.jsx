@@ -1,9 +1,22 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { CartItem } from '../components/CartItem';
+import { clearCart } from '../redux/slices/cartSlice';
+import { CartEmpty } from '../components/CartEmpty';
 
 export const Cart = () => {
-  return (
-    <div className='container container--cart'>
+  const { items, totalPrice} = useSelector(state => state.cart);
+  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
+  const onCLickClear = () => {
+    dispatch(clearCart())
+  }
+  return totalCount === 0 ? (
+      <CartEmpty />
+    ) : (
+      <div className='container container--cart'>
       <div className='cart'>
         <div className='cart__top'>
           <h2 className='content__title'>
@@ -38,7 +51,7 @@ export const Cart = () => {
             </svg>
             Корзина
           </h2>
-          <div className='cart__clear'>
+          <div className='cart__clear' onClick={onCLickClear}>
             <svg
               width='20'
               height='20'
@@ -80,19 +93,19 @@ export const Cart = () => {
           </div>
         </div>
         <div className='content__items'>
-          {/* {items.map((item: any) => (
+          {cartItems.map((item) => (
             <CartItem key={item.id} {...item} />
-          ))} */}
+          ))}
         </div>
         <div className='cart__bottom'>
           <div className='cart__bottom-details'>
             <span>
               {' '}
-              Всего пицц: <b>{} шт.</b>{' '}
+              Всего пицц: <b>{totalCount} шт.</b>{' '}
             </span>
             <span>
               {' '}
-              Сумма заказа: <b>{} ₽</b>{' '}
+              Сумма заказа: <b>{totalPrice} ₽</b>{' '}
             </span>
           </div>
           <div className='cart__bottom-buttons'>
@@ -124,3 +137,5 @@ export const Cart = () => {
     </div>
   );
 };
+
+

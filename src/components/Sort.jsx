@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSortType } from '../redux/slices/filterSlice';
 export const Sort = () => {
   const dispatch = useDispatch();
   const sort = useSelector(state => state.filter.sort)
+  const sortRef = useRef();
 
   const [isShow, setIsShow] = useState(false);
   const list = [
@@ -20,8 +21,21 @@ export const Sort = () => {
     setIsShow(!isShow);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (!sortRef.current.contains(event.target)){
+          setIsShow(false);
+        }
+    }
+    document.body.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.body.removeEventListener("click", handleClickOutside);
+    }
+  }, []);
+
   return (
-    <div className='sort'>
+    <div ref={sortRef} className='sort'>
       <div className='sort__label' onClick={() => setIsShow(!isShow)}>
         {isShow ? (
           <svg
